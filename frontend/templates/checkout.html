@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1>Checkout</h1>
+        <p style="color: var(--text-muted);">Review your order and complete payment</p>
+    </div>
+
+    <div class="card" style="margin-bottom: 2rem;">
+        <h3 style="color: var(--secondary); margin-bottom: 1.5rem;">📦 Order Summary</h3>
+
+        {% for item in cart_items %}
+        <div
+            style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid var(--border);">
+            <div>
+                <span style="font-weight: 600;">{{ item.name }}</span>
+                <span style="color: var(--text-muted); margin-left: 0.5rem;">× {{ item.quantity }}</span>
+            </div>
+            <span style="color: var(--primary); font-weight: 700;">₹{{ "%.2f"|format(item.price * item.quantity)
+                }}</span>
+        </div>
+        {% endfor %}
+
+        <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <span style="color: var(--text-muted);">Subtotal</span>
+                <span style="font-weight: 600;">₹{{ "%.2f"|format(subtotal) }}</span>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+                <div>
+                    <span style="color: var(--text-muted);">Delivery Charge</span>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">
+                        By {{ delivery_person_name }} • {{ city }}
+                    </div>
+                </div>
+                <span style="font-weight: 600;">₹{{ "%.2f"|format(delivery_charge) }}</span>
+            </div>
+            <div
+                style="display: flex; justify-content: space-between; padding-top: 1rem; border-top: 2px solid var(--primary);">
+                <span style="font-size: 1.3rem; font-weight: 700;">Total Amount</span>
+                <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary);">₹{{ "%.2f"|format(total)
+                    }}</span>
+            </div>
+        </div>
+    </div>
+
+    <form action="/place_order_final" method="POST">
+        <div class="card">
+            <h3 style="color: var(--secondary); margin-bottom: 1.5rem;">💳 Payment Method</h3>
+
+            <label
+                style="display: flex; align-items: center; padding: 1rem; margin-bottom: 1rem; background: rgba(10, 14, 39, 0.3); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;"
+                class="payment-option">
+                <input type="radio" name="payment_method" value="gpay" checked style="width: auto; margin-right: 1rem;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Google Pay</div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">Fast & Secure UPI Payment</div>
+                </div>
+                <span style="font-size: 1.5rem;">📱</span>
+            </label>
+
+            <label
+                style="display: flex; align-items: center; padding: 1rem; margin-bottom: 1rem; background: rgba(10, 14, 39, 0.3); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;"
+                class="payment-option">
+                <input type="radio" name="payment_method" value="phonepe" style="width: auto; margin-right: 1rem;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">PhonePe</div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">Quick UPI Transaction</div>
+                </div>
+                <span style="font-size: 1.5rem;">💜</span>
+            </label>
+
+            <label
+                style="display: flex; align-items: center; padding: 1rem; background: rgba(10, 14, 39, 0.3); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: all 0.3s ease;"
+                class="payment-option">
+                <input type="radio" name="payment_method" value="card" style="width: auto; margin-right: 1rem;">
+                <div style="flex: 1;">
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Credit/Debit Card</div>
+                    <div style="font-size: 0.875rem; color: var(--text-muted);">Visa, Mastercard, RuPay</div>
+                </div>
+                <span style="font-size: 1.5rem;">💳</span>
+            </label>
+        </div>
+
+        <input type="hidden" name="total_amount" value="{{ total }}">
+        <input type="hidden" name="delivery_charge" value="{{ delivery_charge }}">
+
+        <button type="submit" class="btn" style="width: 100%; margin-top: 2rem; padding: 1.25rem; font-size: 1.1rem;">
+            🔒 Pay ₹{{ "%.2f"|format(total) }} & Place Order
+        </button>
+    </form>
+</div>
+
+<style>
+    .payment-option:hover {
+        border-color: var(--primary);
+        background: rgba(255, 107, 53, 0.05);
+        transform: translateX(5px);
+    }
+
+    .payment-option input[type="radio"]:checked+div {
+        color: var(--primary);
+    }
+</style>
+{% endblock %}

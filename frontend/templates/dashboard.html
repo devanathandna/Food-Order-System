@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-size: 3.5rem; margin-bottom: 1rem;">Discover Amazing Restaurants</h1>
+    <p style="color: var(--text-muted); font-size: 1.2rem;">Curated dining experiences delivered to your doorstep</p>
+</div>
+
+<div class="grid">
+    {% for hotel in hotels %}
+    <div class="restaurant-card" onclick="window.location.href='/order/{{ hotel.id }}'">
+        <div class="restaurant-header"
+            style="background: {% if loop.index % 3 == 0 %}var(--gradient-1){% elif loop.index % 3 == 1 %}var(--gradient-2){% else %}var(--gradient-3){% endif %};">
+            <div class="restaurant-name">{{ hotel.name }}</div>
+            <div class="restaurant-location">📍 {{ hotel.city }}</div>
+        </div>
+        <div class="restaurant-body">
+            <h4 style="color: var(--secondary); margin-bottom: 1rem;">Featured Menu</h4>
+            {% if hotel.menu %}
+            {% for item in hotel.menu[:3] %}
+            <div
+                style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border);">
+                <span>{{ item.name }}</span>
+                <span style="color: var(--primary); font-weight: 600;">₹{{ item.price }}</span>
+            </div>
+            {% endfor %}
+            {% if hotel.menu|length > 3 %}
+            <p style="color: var(--text-muted); margin-top: 1rem; text-align: center;">+ {{ hotel.menu|length - 3 }}
+                more items</p>
+            {% endif %}
+            {% else %}
+            <p style="color: var(--text-muted);">Menu coming soon...</p>
+            {% endif %}
+
+            <button class="btn" style="width: 100%; margin-top: 1.5rem;">
+                View Full Menu →
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% if not hotels %}
+<div class="card" style="text-align: center; padding: 4rem 2rem;">
+    <h2 style="color: var(--text-muted);">No restaurants available yet</h2>
+    <p style="color: var(--text-muted); margin-top: 1rem;">Check back soon for amazing dining options!</p>
+</div>
+{% endif %}
+
+<style>
+    .restaurant-card {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

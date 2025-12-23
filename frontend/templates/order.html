@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 0 auto;">
+    <div style="text-align: center; margin-bottom: 3rem;">
+        <h1>{{ hotel.name }}</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">📍 {{ hotel.city }}</p>
+    </div>
+
+    <form action="/add_to_cart" method="POST">
+        <input type="hidden" name="hotel_name" value="{{ hotel.name }}">
+        <input type="hidden" name="hotel_id" value="{{ hotel.id }}">
+
+        <div class="card">
+            <h2 style="margin-bottom: 2rem; text-align: center;">Select Your Dishes</h2>
+
+            {% for item in hotel.menu %}
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 1.5rem; margin-bottom: 1rem; background: rgba(10, 14, 39, 0.3); border: 1px solid var(--border); border-radius: 12px; transition: all 0.3s ease;"
+                class="menu-item">
+                <div style="flex: 1;">
+                    <h3 style="color: var(--text-light); margin-bottom: 0.5rem;">{{ item.name }}</h3>
+                    <p style="color: var(--primary); font-size: 1.2rem; font-weight: 700;">₹{{ item.price }}</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <label style="color: var(--text-muted); margin: 0;">Quantity:</label>
+                    <input type="number" name="qty_{{ item.name }}" value="0" min="0" max="10"
+                        style="width: 80px; padding: 0.75rem; margin: 0; text-align: center; font-size: 1.1rem; font-weight: 600;">
+                    <input type="hidden" name="price_{{ item.name }}" value="{{ item.price }}">
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <a href="/" class="btn"
+                style="flex: 1; text-align: center; text-decoration: none; background: rgba(255, 255, 255, 0.1); box-shadow: none;">
+                ← Back to Restaurants
+            </a>
+            <button type="submit" class="btn" style="flex: 2;">
+                Add to Cart & Continue →
+            </button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .menu-item:hover {
+        transform: translateX(5px);
+        border-color: var(--primary);
+        box-shadow: 0 4px 20px rgba(255, 107, 53, 0.2);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+        opacity: 1;
+    }
+</style>
+{% endblock %}

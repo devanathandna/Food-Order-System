@@ -1,0 +1,118 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="text-align: center; margin-bottom: 3rem;">
+    <div
+        style="display: inline-block; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 0.5rem 1.5rem; border-radius: 20px; margin-bottom: 1rem;">
+        <span style="color: white; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">🔐 Admin
+            Portal</span>
+    </div>
+    <h1 style="font-size: 3rem;">Management Dashboard</h1>
+    <p style="color: var(--text-muted); font-size: 1.1rem;">Manage restaurants, menu items, and delivery partners</p>
+</div>
+
+<!-- Navigation Portals -->
+<div
+    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
+    <a href="/admin/portal/add_hotel" style="text-decoration: none;">
+        <div class="card portal-card" style="text-align: center; padding: 3rem 2rem; cursor: pointer; height: 100%;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🏨</div>
+            <h3 style="color: var(--secondary); margin-bottom: 1rem;">Add Restaurant</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">Register new restaurant partners with location and
+                initial menu setup</p>
+        </div>
+    </a>
+
+    <a href="/admin/portal/add_food" style="text-decoration: none;">
+        <div class="card portal-card" style="text-align: center; padding: 3rem 2rem; cursor: pointer; height: 100%;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🍽️</div>
+            <h3 style="color: var(--secondary); margin-bottom: 1rem;">Add Food Items</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">Expand restaurant menus with new dishes and pricing
+            </p>
+        </div>
+    </a>
+
+    <a href="/admin/portal/add_delivery" style="text-decoration: none;">
+        <div class="card portal-card" style="text-align: center; padding: 3rem 2rem; cursor: pointer; height: 100%;">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">🚴</div>
+            <h3 style="color: var(--secondary); margin-bottom: 1rem;">Add Delivery Person</h3>
+            <p style="color: var(--text-muted); line-height: 1.6;">Assign delivery partners to restaurants with custom
+                rates</p>
+        </div>
+    </a>
+</div>
+
+<h2 style="margin-bottom: 2rem;">📊 Current Restaurants</h2>
+<div class="card">
+    {% if hotels %}
+    {% for hotel in hotels %}
+    <div
+        style="background: rgba(10, 14, 39, 0.4); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 1rem;">
+            <div>
+                <h3 style="color: var(--primary); margin-bottom: 0.5rem;">{{ hotel.name }}</h3>
+                <p style="color: var(--text-muted); font-size: 0.9rem;">📍 {{ hotel.city }} • ID: {{ hotel.id }}</p>
+            </div>
+            <div
+                style="background: rgba(255, 107, 53, 0.1); border: 1px solid var(--primary); padding: 0.5rem 1rem; border-radius: 8px;">
+                <span style="color: var(--primary); font-weight: 600;">{{ hotel.menu|length }} Items</span>
+            </div>
+        </div>
+
+        {% if hotel.menu %}
+        <div style="background: rgba(0, 0, 0, 0.3); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+            <h4 style="color: var(--secondary); margin-bottom: 0.75rem; font-size: 0.9rem;">Menu Items:</h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem;">
+                {% for item in hotel.menu %}
+                <div
+                    style="display: flex; justify-content: space-between; padding: 0.5rem; background: rgba(255, 255, 255, 0.02); border-radius: 4px;">
+                    <span>{{ item.name }}</span>
+                    <span style="color: var(--primary); font-weight: 600;">₹{{ item.price }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if hotel.delivery_person %}
+        <div
+            style="display: flex; align-items: center; gap: 1rem; padding: 0.75rem; background: rgba(78, 205, 196, 0.1); border: 1px solid var(--accent); border-radius: 8px;">
+            <span style="font-size: 1.5rem;">🚴</span>
+            <div style="flex: 1;">
+                <div style="font-weight: 600; color: var(--accent);">{{ hotel.delivery_person.name }}</div>
+                <div style="font-size: 0.85rem; color: var(--text-muted);">{{ hotel.delivery_person.phone }} • {{
+                    hotel.delivery_person.city }}</div>
+            </div>
+            <div style="background: rgba(78, 205, 196, 0.2); padding: 0.5rem 1rem; border-radius: 6px;">
+                <span style="color: var(--accent); font-weight: 700;">₹{{ hotel.delivery_person.charge }}</span>
+            </div>
+        </div>
+        {% else %}
+        <div
+            style="padding: 0.75rem; background: rgba(255, 255, 255, 0.05); border: 1px dashed var(--border); border-radius: 8px; text-align: center; color: var(--text-muted);">
+            No delivery person assigned
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+        <div style="font-size: 4rem; margin-bottom: 1rem;">🏪</div>
+        <h3>No restaurants registered yet</h3>
+        <p style="margin-top: 0.5rem;">Start by adding your first restaurant partner</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .portal-card {
+        transition: all 0.3s ease;
+    }
+
+    .portal-card:hover {
+        transform: translateY(-10px) scale(1.02);
+        border-color: var(--primary);
+        box-shadow: 0 20px 60px rgba(255, 107, 53, 0.3);
+    }
+</style>
+{% endblock %}

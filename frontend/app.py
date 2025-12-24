@@ -8,7 +8,7 @@ app.secret_key = 'super_secret_key'
 # Hardcoded Backend URL for Render Deployment
 # Replace this with your actual Render backend URL after deployment
 # Example: GATEWAY_URL = 'https://baratie-backend.onrender.com'
-GATEWAY_URL = 'https://YOUR-BACKEND-APP-NAME.onrender.com'  # ⬅️ REPLACE THIS!
+GATEWAY_URL = 'https://baratie-food-ordering.onrender.com'  # ⬅️ REPLACE THIS!
 
 @app.route('/')
 def home():

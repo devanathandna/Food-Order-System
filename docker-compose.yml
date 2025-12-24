@@ -1,63 +1,27 @@
 version: '3.8'
 
 services:
-  # Core Service
-  core-service:
+  # Backend Service (Consolidated API)
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: baratie-core
+    container_name: baratie-backend
     ports:
-      - "5002:5002"
+      - "5000:5000"
     environment:
-      - SERVICE_NAME=core
-      - PORT=5002
+      - SERVICE_NAME=backend
+      - PORT=5000
       - MONGO_URI=${MONGO_URI}
       - ADMIN_USER=${ADMIN_USER:-admin}
       - ADMIN_PASS=${ADMIN_PASS:-admin123}
-    networks:
-      - baratie-network
-    restart: unless-stopped
-
-  # Transaction Service
-  transaction-service:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: baratie-transaction
-    ports:
-      - "5003:5003"
-    environment:
-      - SERVICE_NAME=transaction
-      - PORT=5003
-      - MONGO_URI=${MONGO_URI}
       - SENDER_EMAIL=${SENDER_EMAIL}
       - SENDER_PASSWORD=${SENDER_PASSWORD}
     networks:
       - baratie-network
     restart: unless-stopped
 
-  # API Gateway
-  api-gateway:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: baratie-gateway
-    ports:
-      - "5000:5000"
-    environment:
-      - SERVICE_NAME=gateway
-      - PORT=5000
-      - CORE_SERVICE_URL=http://core-service:5002
-      - TRANS_SERVICE_URLS=http://transaction-service:5003
-    depends_on:
-      - core-service
-      - transaction-service
-    networks:
-      - baratie-network
-    restart: unless-stopped
-
-  # Frontend
+  # Frontend Service
   frontend:
     build:
       context: .
@@ -68,9 +32,9 @@ services:
     environment:
       - SERVICE_NAME=frontend
       - PORT=5001
-      - GATEWAY_URL=http://api-gateway:5000
+      - GATEWAY_URL=http://backend:5000
     depends_on:
-      - api-gateway
+      - backend
     networks:
       - baratie-network
     restart: unless-stopped

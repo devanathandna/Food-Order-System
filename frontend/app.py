@@ -5,8 +5,10 @@ import os
 app = Flask(__name__)
 app.secret_key = 'super_secret_key'
 
-# Use environment variable for Gateway URL (required for Render)
-GATEWAY_URL = os.environ.get('GATEWAY_URL', 'http://localhost:5000')
+# Hardcoded Backend URL for Render Deployment
+# Replace this with your actual Render backend URL after deployment
+# Example: GATEWAY_URL = 'https://baratie-backend.onrender.com'
+GATEWAY_URL = 'https://YOUR-BACKEND-APP-NAME.onrender.com'  # ⬅️ REPLACE THIS!
 
 @app.route('/')
 def home():

@@ -1,206 +1,270 @@
-# Render Deployment Guide (Docker)
+# 🚀 Render Deployment Guide - Step by Step
 
-## 🐳 Single Dockerfile Deployment
-
-This project uses a **single Dockerfile** that can run any of the 4 services based on the `SERVICE_NAME` environment variable.
-
-## 📋 Render Deployment Steps
-
-### Step 1: Push to GitHub
-```bash
-git add .
-git commit -m "Add Docker support"
-git push origin main
-```
-
-### Step 2: Create Web Services on Render
-
-Create **4 separate Web Services** on Render, one for each microservice:
-
-#### Service 1: API Gateway
-- **Name**: `baratie-gateway`
-- **Environment**: `Docker`
-- **Dockerfile Path**: `Dockerfile`
-- **Docker Command**: (leave blank, uses Dockerfile CMD)
-
-**Environment Variables**:
-```
-SERVICE_NAME=gateway
-CORE_SERVICE_URL=https://baratie-core.onrender.com
-TRANS_SERVICE_URLS=https://baratie-transaction.onrender.com
-```
-
-#### Service 2: Frontend
-- **Name**: `baratie-frontend`
-- **Environment**: `Docker`
-- **Dockerfile Path**: `Dockerfile`
-
-**Environment Variables**:
-```
-SERVICE_NAME=frontend
-GATEWAY_URL=https://baratie-gateway.onrender.com
-```
-
-#### Service 3: Core Service
-- **Name**: `baratie-core`
-- **Environment**: `Docker`
-- **Dockerfile Path**: `Dockerfile`
-
-**Environment Variables**:
-```
-SERVICE_NAME=core
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/?appName=ClusterMain
-ADMIN_USER=admin
-ADMIN_PASS=your-secure-password
-```
-
-#### Service 4: Transaction Service
-- **Name**: `baratie-transaction`
-- **Environment**: `Docker`
-- **Dockerfile Path**: `Dockerfile`
-
-**Environment Variables**:
-```
-SERVICE_NAME=transaction
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/?appName=ClusterMain
-SENDER_EMAIL=your-email@gmail.com
-SENDER_PASSWORD=your-app-password
-```
-
-### Step 3: Update Service URLs
-
-After all services are deployed, **update the environment variables** with actual Render URLs:
-
-1. In **API Gateway**:
-   - `CORE_SERVICE_URL` → `https://baratie-core.onrender.com`
-   - `TRANS_SERVICE_URLS` → `https://baratie-transaction.onrender.com`
-
-2. In **Frontend**:
-   - `GATEWAY_URL` → `https://baratie-gateway.onrender.com`
-
-### Step 4: Access Your Application
-
-- **Frontend**: `https://baratie-frontend.onrender.com`
-- **Admin Panel**: `https://baratie-frontend.onrender.com/admin`
-
-## 🏠 Local Development with Docker
-
-### Using Docker Compose (Recommended)
-```bash
-# Create .env file
-cp .env.docker .env
-# Edit .env with your credentials
-
-# Build and start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
-
-### Using Docker CLI
-```bash
-# Build image
-docker build -t baratie .
-
-# Run Gateway
-docker run -d -p 5000:5000 \
-  -e SERVICE_NAME=gateway \
-  -e CORE_SERVICE_URL=http://localhost:5002 \
-  -e TRANS_SERVICE_URLS=http://localhost:5003 \
-  baratie
-
-# Run Frontend
-docker run -d -p 5001:5001 \
-  -e SERVICE_NAME=frontend \
-  -e GATEWAY_URL=http://localhost:5000 \
-  baratie
-
-# Run Core Service
-docker run -d -p 5002:5002 \
-  -e SERVICE_NAME=core \
-  -e MONGO_URI="your-mongo-uri" \
-  baratie
-
-# Run Transaction Service
-docker run -d -p 5003:5003 \
-  -e SERVICE_NAME=transaction \
-  -e MONGO_URI="your-mongo-uri" \
-  -e SENDER_EMAIL="your-email" \
-  -e SENDER_PASSWORD="your-password" \
-  baratie
-```
-
-## 🔑 Environment Variables Reference
-
-### All Services
-- `SERVICE_NAME` - **Required**: `gateway`, `frontend`, `core`, or `transaction`
-- `PORT` - Auto-set by Render (default: varies by service)
-
-### Gateway Service
-- `CORE_SERVICE_URL` - Core service URL
-- `TRANS_SERVICE_URLS` - Transaction service URL(s)
-
-### Frontend Service
-- `GATEWAY_URL` - API Gateway URL
-
-### Core Service
-- `MONGO_URI` - MongoDB connection string
-- `ADMIN_USER` - Admin username
-- `ADMIN_PASS` - Admin password
-
-### Transaction Service
-- `MONGO_URI` - MongoDB connection string
-- `SENDER_EMAIL` - Gmail for notifications
-- `SENDER_PASSWORD` - Gmail app password
-
-## 🛠️ Dockerfile Explanation
-
-The single Dockerfile uses a conditional CMD:
-
-```dockerfile
-CMD if [ "$SERVICE_NAME" = "gateway" ]; then \
-        gunicorn -w 4 -b 0.0.0.0:${PORT:-5000} api_gateway.app:app; \
-    elif [ "$SERVICE_NAME" = "frontend" ]; then \
-        gunicorn -w 4 -b 0.0.0.0:${PORT:-5001} frontend.app:app; \
-    # ... etc
-```
-
-This allows one Dockerfile to serve all microservices!
-
-## 🐛 Troubleshooting
-
-### Service Won't Start
-- Check `SERVICE_NAME` is set correctly
-- Verify all required environment variables are set
-- Check Render logs for errors
-
-### Wrong Service Running
-- Ensure `SERVICE_NAME` matches: `gateway`, `frontend`, `core`, or `transaction`
-- Case-sensitive!
-
-### Services Can't Communicate
-- Use full Render URLs (not localhost)
-- Ensure all services are deployed and running
-- Check environment variable URLs are correct
-
-## 💡 Advantages of Single Dockerfile
-
-✅ **Simpler maintenance** - One file to update  
-✅ **Consistent builds** - All services use same base  
-✅ **Smaller repo** - Less duplication  
-✅ **Easier CI/CD** - Single build process  
-✅ **Render-friendly** - Easy to configure  
-
-## 📞 Support
-
-- Check Render logs: Dashboard → Service → Logs
-- Verify environment variables: Dashboard → Service → Environment
-- Review [Render Docker Docs](https://render.com/docs/docker)
+## 📋 Prerequisites
+- GitHub account
+- Render.com account (free tier works!)
+- MongoDB Atlas account with connection string
 
 ---
 
-**Ready to deploy!** 🚀
+## 🎯 Deployment Steps
+
+### Step 1: Deploy Backend First
+
+1. **Go to Render Dashboard**: https://dashboard.render.com/
+
+2. **Create New Web Service**:
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository
+   - Select your repository
+
+3. **Configure Backend Service**:
+   ```
+   Name: baratie-backend (or any name you prefer)
+   Region: Choose closest to you
+   Branch: main (or your branch name)
+   Root Directory: (leave empty)
+   Runtime: Python 3
+   Build Command: pip install -r requirements.txt
+   Start Command: gunicorn -w 4 -b 0.0.0.0:$PORT backend.app:app
+   ```
+
+4. **Add Environment Variables**:
+   Click "Advanced" → "Add Environment Variable"
+   
+   ```
+   MONGO_URI = mongodb+srv://username:password@cluster.mongodb.net/...
+   ADMIN_USER = admin
+   ADMIN_PASS = admin123
+   SENDER_EMAIL = your_email@gmail.com
+   SENDER_PASSWORD = your_gmail_app_password
+   ```
+
+5. **Create Web Service** (Click the button)
+
+6. **Wait for Deployment** (2-5 minutes)
+
+7. **Copy Your Backend URL**:
+   - Once deployed, you'll see a URL like: `https://baratie-backend-xyz.onrender.com`
+   - **COPY THIS URL** - you'll need it for the frontend!
+
+8. **Test Backend**:
+   - Visit: `https://your-backend-url.onrender.com/health`
+   - You should see: `{"status": "healthy", "service": "Baratie Backend"}`
+
+---
+
+### Step 2: Update Frontend with Backend URL
+
+1. **Open `frontend/app.py`** in your code editor
+
+2. **Find line 11** (the one with the arrow ⬅️):
+   ```python
+   GATEWAY_URL = 'https://YOUR-BACKEND-APP-NAME.onrender.com'  # ⬅️ REPLACE THIS!
+   ```
+
+3. **Replace with your actual backend URL**:
+   ```python
+   GATEWAY_URL = 'https://baratie-backend-xyz.onrender.com'
+   ```
+   *(Use the URL you copied from Step 1.7)*
+
+4. **Save the file**
+
+5. **Commit and push to GitHub**:
+   ```bash
+   git add frontend/app.py
+   git commit -m "Updated backend URL for Render deployment"
+   git push
+   ```
+
+---
+
+### Step 3: Deploy Frontend
+
+1. **Go to Render Dashboard**: https://dashboard.render.com/
+
+2. **Create New Web Service**:
+   - Click "New +" → "Web Service"
+   - Connect your GitHub repository (same repo)
+
+3. **Configure Frontend Service**:
+   ```
+   Name: baratie-frontend (or any name you prefer)
+   Region: Same as backend
+   Branch: main
+   Root Directory: (leave empty)
+   Runtime: Python 3
+   Build Command: pip install -r requirements.txt
+   Start Command: gunicorn -w 4 -b 0.0.0.0:$PORT frontend.app:app
+   ```
+
+4. **No Environment Variables Needed** (since you hardcoded the URL!)
+
+5. **Create Web Service**
+
+6. **Wait for Deployment** (2-5 minutes)
+
+7. **Get Your Frontend URL**:
+   - You'll see a URL like: `https://baratie-frontend-xyz.onrender.com`
+
+---
+
+### Step 4: Test Your Application
+
+1. **Visit your frontend URL**: `https://baratie-frontend-xyz.onrender.com`
+
+2. **Test User Flow**:
+   - Register a new account
+   - Login
+   - Browse restaurants (if any exist)
+
+3. **Test Admin Flow**:
+   - Go to: `https://baratie-frontend-xyz.onrender.com/admin`
+   - Login with: `admin` / `admin123`
+   - Add a restaurant
+   - Add menu items
+   - Add delivery person
+
+4. **Test Order Flow**:
+   - Logout from admin
+   - Login as user
+   - Browse restaurants
+   - Add items to cart
+   - Place order
+
+---
+
+## 🎨 Visual Deployment Flow
+
+```
+┌─────────────────────────────────────────────────┐
+│  Step 1: Deploy Backend to Render              │
+│  ✅ Get Backend URL                             │
+│  Example: https://baratie-backend.onrender.com │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│  Step 2: Update frontend/app.py                │
+│  ✅ Hardcode GATEWAY_URL with backend URL       │
+│  ✅ Commit and push to GitHub                   │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│  Step 3: Deploy Frontend to Render             │
+│  ✅ Frontend will use hardcoded backend URL     │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│  Step 4: Test Everything                       │
+│  ✅ User registration/login                     │
+│  ✅ Admin operations                            │
+│  ✅ Order placement                             │
+└─────────────────────────────────────────────────┘
+```
+
+---
+
+## 📝 Quick Reference
+
+### Backend Configuration
+```
+Build Command: pip install -r requirements.txt
+Start Command: gunicorn -w 4 -b 0.0.0.0:$PORT backend.app:app
+```
+
+### Frontend Configuration
+```
+Build Command: pip install -r requirements.txt
+Start Command: gunicorn -w 4 -b 0.0.0.0:$PORT frontend.app:app
+```
+
+### Where to Hardcode Backend URL
+**File**: `frontend/app.py`  
+**Line**: ~11  
+**Change**: 
+```python
+GATEWAY_URL = 'https://your-actual-backend-url.onrender.com'
+```
+
+---
+
+## ⚠️ Important Notes
+
+1. **Free Tier Limitations**:
+   - Services spin down after 15 minutes of inactivity
+   - First request after spin-down takes 30-60 seconds
+   - Upgrade to paid plan for always-on services
+
+2. **MongoDB Atlas**:
+   - Make sure your IP is whitelisted (or allow all: `0.0.0.0/0`)
+   - Use the connection string with your actual credentials
+
+3. **Email Notifications**:
+   - Use Gmail App Password (not regular password)
+   - Enable 2FA on Gmail first
+
+4. **HTTPS**:
+   - Render automatically provides HTTPS
+   - No additional configuration needed
+
+---
+
+## 🔧 Troubleshooting
+
+### Backend Not Starting
+- Check logs in Render dashboard
+- Verify `MONGO_URI` is correct
+- Ensure `requirements.txt` includes all dependencies
+
+### Frontend Can't Connect to Backend
+- Verify you hardcoded the correct backend URL in `frontend/app.py`
+- Check backend is running (visit `/health` endpoint)
+- Ensure backend URL uses `https://` not `http://`
+
+### 502 Bad Gateway
+- Backend service is spinning up (wait 30-60 seconds)
+- Check backend logs for errors
+
+### MongoDB Connection Error
+- Verify MongoDB Atlas IP whitelist
+- Check connection string format
+- Ensure database user has correct permissions
+
+---
+
+## 🎉 Success Checklist
+
+- [ ] Backend deployed and accessible
+- [ ] Backend `/health` endpoint returns healthy status
+- [ ] Frontend `app.py` updated with backend URL
+- [ ] Changes committed and pushed to GitHub
+- [ ] Frontend deployed and accessible
+- [ ] User registration works
+- [ ] User login works
+- [ ] Admin login works
+- [ ] Can add restaurants
+- [ ] Can place orders
+
+---
+
+## 📞 Need Help?
+
+If you encounter issues:
+1. Check Render logs (click on your service → "Logs" tab)
+2. Test backend endpoints directly with browser or Postman
+3. Verify environment variables are set correctly
+4. Check MongoDB Atlas connection
+
+---
+
+**Your Render URLs will look like**:
+- Backend: `https://baratie-backend-xyz.onrender.com`
+- Frontend: `https://baratie-frontend-xyz.onrender.com`
+
+**Remember**: Replace `YOUR-BACKEND-APP-NAME.onrender.com` in `frontend/app.py` with your actual backend URL!
+
+Good luck! 🚀
